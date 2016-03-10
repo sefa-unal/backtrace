@@ -53,8 +53,8 @@ Acknowledgments
 I would like to thank the following people for providing clear insight and sample 
 code helping me untangle this dark corner of the compiler world:
 
-Ken Werner of Linaro
-Mika Westerberg of Nokia
+- Ken Werner of Linaro
+- Mika Westerberg of Nokia
 
 Dependencies
 ------------
@@ -155,7 +155,9 @@ To compile and link this sample using a recent GCC ARM Embedded compiler:
 
 	arm-none-eabi-gcc -mthumb -mcpu=cortex-m3 -I /path/to/include \
 	-fmessage-length=0 -fsigned-char -ffunction-sections \
-	-fdata-sections -std=c11 -mpoke-function-name -funwind-tables -fno-omit-frame-pointer ping-pong.c -o ping-pong.afx --specs=rdimon.specs --specs=nano.specs -L /path/to/lib -lbacktrace
+	-fdata-sections -std=c11 -mpoke-function-name -funwind-tables \
+	-fno-omit-frame-pointer ping-pong.c -o ping-pong.afx \
+	--specs=rdimon.specs --specs=nano.specs -L /path/to/lib -lbacktrace
 
 To run ping-poing.afx with qemu:
 
