@@ -338,7 +338,6 @@ static int unwind_frame(backtrace_frame_t *frame)
 
 int _backtrace_unwind(backtrace_t *buffer, int size, backtrace_frame_t *frame)
 {
-	const unwind_index_t *index;
 	int count = 0;
 
 	/* Initialize the backtrace frame buffer */
@@ -356,6 +355,13 @@ int _backtrace_unwind(backtrace_t *buffer, int size, backtrace_frame_t *frame)
 			/* Reached .cantunwind instruction. */
 			buffer[count++].name = "<reached .cantunwind>";
 			break;
+		}
+
+		/* Find the unwind index of the current frame pc */
+		const unwind_index_t *index = unwind_search_index(__exidx_start, __exidx_end, frame->pc);
+
+		/* Clear last bit (Thumb indicator) */
+		frame->pc &= 0xfffffffeU;
 
 		/* Generate the backtrace information */
 		buffer[count].address = (void *)frame->pc;
