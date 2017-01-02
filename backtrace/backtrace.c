@@ -275,6 +275,53 @@ static int unwind_frame(backtrace_frame_t *frame)
 	if (ucb.vrs[15] == 0)
 		ucb.vrs[15] = ucb.vrs[14];
 
+	/* Check for exception return */
+	/* TODO Test with other ARM processors to verify this method. */
+	if ((ucb.vrs[15] & 0xf0000000) == 0xf0000000) {
+		/* According to the Cortex Programming Manual (p.44), the stack address is always 8-byte aligned (Cortex-M7).
+		   Depending on where the exception came from (MSP or PSP), we need the right SP value to work with.
+
+		   ucb.vrs[7] contains the right value, so take it and align it by 8 bytes, store it as the current
+		   SP to work with (ucb.vrs[13]) which is then saved as the current (virtual) frame's SP.
+		*/
+		uint32_t *stack;
+		ucb.vrs[13] = (ucb.vrs[7] & ~7);
+
+		/* If we need to start from the MSP, we need to go down X words to find the PC, where:
+				X=2  if it was a non-floating-point exception
+				X=20 if it was a floating-point (VFP) exception
+
+		   If we need to start from the PSP, we need to go up exactly 6 words to find the PC.
+		   See the ARMv7-M Architecture Reference Manual p.594 and Cortex-M7 Processor Programming Manual p.44/p.45 for details.
+		*/
+		if ((ucb.vrs[15] & 0xc) == 0) {
+			/* Return to Handler Mode: MSP (0xffffff-1) */
+			stack = (uint32_t*)(ucb.vrs[13]);
+
+			/* The PC is always 2 words down from the MSP, if it was a non-floating-point exception */
+			stack -= 2;
+
+			/* If there was a VFP exception (0xffffffe1), the PC is located another 18 words down */
+			if ((ucb.vrs[15] & 0xf0) == 0xe0)
+			{
+				stack -= 18;
+			}
+		}
+		else {
+			/* Return to Thread Mode: PSP (0xffffff-d) */
+			stack = readPSP();
+
+			/* The PC is always 6 words up from the PSP */
+			stack += 6;
+		}
+
+		/* Store the PC */
+		ucb.vrs[15] = *stack--;
+
+		/* Store the LR */
+		ucb.vrs[14] = *stack--;
+	}
+
 	/* We are done if current frame pc is equal to the virtual pc, prevent infinite loop */
 	if (frame->pc == ucb.vrs[15])
 		return 0;
