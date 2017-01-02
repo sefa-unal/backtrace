@@ -226,6 +226,19 @@ static int unwind_execute_instruction(unwind_control_block_t *ucb)
 	return instruction != -1;
 }
 
+static inline __attribute__((always_inline)) unsigned int *readPSP(void)
+{
+	/* Read the current PSP and return its value as a pointer */
+	unsigned int psp;
+
+	__asm volatile (
+		"   mrs %0, psp \n"
+		: "=r" (psp) : :
+	);
+
+	return (unsigned int*)psp;
+}
+
 /* TODO How do I range check the stack pointer */
 static int unwind_frame(backtrace_frame_t *frame)
 {
