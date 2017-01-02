@@ -346,24 +346,21 @@ int _backtrace_unwind(backtrace_t *buffer, int size, backtrace_frame_t *frame)
 
 	/* Unwind all frames */
 	do {
-		/* Find the unwind index of the current frame pc */
-		index = unwind_search_index(__exidx_start, __exidx_end, frame->pc);
+		if (frame->pc == 0) {
+			/* Reached __exidx_end. */
+			buffer[count++].name = "<reached end of unwind table>";
+			break;
+		}
 
-		/* If the PC points to an EXC_RETURN we are done */
-		/* TODO Fix to allow unwind across exception returns */
-		if ((frame->pc & 0xf0000000) == 0xf0000000)
+		if (frame->pc == 0x00000001) {
+			/* Reached .cantunwind instruction. */
+			buffer[count++].name = "<reached .cantunwind>";
 			break;
 
 		/* Generate the backtrace information */
 		buffer[count].address = (void *)frame->pc;
 		buffer[count].function = (void *)prel31_to_addr(&index->addr_offset);
 		buffer[count].name = unwind_get_function_name(buffer[count].function);
-
-		/* Check for possible corruption */
-		if (frame->pc == 0) {
-			buffer[count++].name = "possible stack corruption";
-			break;
-		}
 
 		/* Next backtrace frame */
 		++count;
