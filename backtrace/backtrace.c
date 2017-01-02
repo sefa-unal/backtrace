@@ -192,21 +192,32 @@ static int unwind_execute_instruction(unwind_control_block_t *ucb)
 			/* vps = vsp + 0x204 + (uleb128 << 2) */
 			ucb->vrs[13] += 0x204 + (unwind_get_next_byte(ucb) << 2);
 
-		} else if (instruction == 0xb3) {
-			/* pop VFP double-precision registers D[ssss]-D[ssss+cccc] */
-			return -1;
+		} else if (instruction == 0xb3 || instruction == 0xc8 || instruction == 0xc9) {
+			/* pop VFP double-precision registers */
+			vsp = (uint32_t *)ucb->vrs[13];
 
-		} else if ((instruction & 0xf8) == 0xb8) {
+			/* D[ssss]-D[ssss+cccc] */
+			ucb->vrs[14] = *vsp++;
+
+			if (instruction == 0xc8) {
+				/* D[16+sssss]-D[16+ssss+cccc] */
+				ucb->vrs[14] |= 1 << 16;
+			}
+
+			if (instruction != 0xb3) {
+				/* D[sssss]-D[ssss+cccc] */
+				ucb->vrs[14] |= 1 << 17;
+			}
+
+			ucb->vrs[13] = (uint32_t)vsp;
+
+		} else if ((instruction & 0xf8) == 0xb8 || (instruction & 0xf8) == 0xd0) {
 			/* Pop VFP double precision registers D[8]-D[8+nnn] */
-			return -1;
+			ucb->vrs[14] = 0x80 | (instruction & 0x07);
 
-		} else if (instruction == 0xc8) {
-			/* Pop VFP double precision registers D[16+sssss]-D[16+ssss+cccc] */
-			return -1;
-
-		} else if (instruction == 0xc9) {
-			/* Pop VFP double precision registers D[sssss]-D[ssss+cccc] */
-			return -1;
+			if ((instruction & 0xf8) == 0xd0) {
+				ucb->vrs[14] = 1 << 17;
+			}
 
 		} else
 			return -1;
