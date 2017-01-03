@@ -226,17 +226,17 @@ static int unwind_execute_instruction(unwind_control_block_t *ucb)
 	return instruction != -1;
 }
 
-static inline __attribute__((always_inline)) unsigned int *readPSP(void)
+static inline __attribute__((always_inline)) uint32_t *read_psp(void)
 {
 	/* Read the current PSP and return its value as a pointer */
-	unsigned int psp;
+	uint32_t psp;
 
 	__asm volatile (
 		"   mrs %0, psp \n"
 		: "=r" (psp) : :
 	);
 
-	return (unsigned int*)psp;
+	return (uint32_t*)psp;
 }
 
 /* TODO How do I range check the stack pointer */
@@ -309,7 +309,7 @@ static int unwind_frame(backtrace_frame_t *frame)
 		}
 		else {
 			/* Return to Thread Mode: PSP (0xffffff-d) */
-			stack = readPSP();
+			stack = read_psp();
 
 			/* The PC is always 6 words up from the PSP */
 			stack += 6;
