@@ -161,7 +161,7 @@ To compile and link this sample using a recent GCC ARM Embedded compiler:
 
 To run ping-poing.afx with qemu:
 
-	> qemu-arm -cpu cortex-m3 ./ping-pong.afx
+	> qemu-arm-static -cpu cortex-m3 ./ping-pong.afx
   	  pong - 10
 	  pong - 9
 	  pong - 8
