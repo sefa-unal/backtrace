@@ -45,7 +45,6 @@ CROSS_FLAGS := -mthumb -mcpu=cortex-m${CORTEX_M}
 ARFLAGS := cr
 ASFLAGS := ${CROSS_FLAGS}
 CFLAGS := ${CROSS_FLAGS} -fmessage-length=0 -fsigned-char -ffunction-sections -fdata-sections -Wall -Wunused -Wuninitialized -Wmissing-declarations -std=c11 -mpoke-function-name -funwind-tables -fno-omit-frame-pointer
-CXXFLAGS := ${CROSS_FLAGS} -fno-omit-frame-pointer -fmessage-length=0 -fsigned-char -ffunction-sections -fdata-sections -Wall -Wunused -Wuninitialized -Wmissing-declarations -std=c11 -mpoke-function-name -fno-omit-frame-pointer
 CPPFLAGS += -DBUILD_TYPE="${BUILD_TYPE}"
 LDFLAGS := ${CROSS_FLAGS} -Wl,--gc-sections  -Wl,--cref -Wl,-Map,"$(basename ${TARGET}).map"
 LDLIBS :=
