@@ -17,15 +17,15 @@ void __aeabi_unwind_cpp_pr2(void);
 
 void __aeabi_unwind_cpp_pr0(void)
 {
-};
+}
 
 void __aeabi_unwind_cpp_pr1(void)
 {
-};
+}
 
 void __aeabi_unwind_cpp_pr2(void)
 {
-};
+}
 
 static inline __attribute__((always_inline)) uint32_t prel31_to_addr(const uint32_t *prel31)
 {
@@ -50,9 +50,9 @@ static const struct unwind_index *unwind_search_index(const unwind_index_t *star
 
 static const char *unwind_get_function_name(void *address)
 {
-	uint32_t flag_word = *(uint32_t *)(address - 4);
+	uint32_t flag_word = *(uint32_t *)((char*)address - 4);
 	if ((flag_word & 0xff000000) == 0xff000000) {
-		return (const char *)(address - 4 - (flag_word & 0x00ffffff));
+		return (const char *)((char*)address - 4 - (flag_word & 0x00ffffff));
 	}
 	return "unknown";
 }
@@ -160,7 +160,7 @@ static int unwind_execute_instruction(unwind_control_block_t *ucb)
 			/* pop r4-r[4+nnn] or pop r4-r[4+nnn], r14*/
 			vsp = (uint32_t *)ucb->vrs[13];
 
-			for (reg = 4; reg <= (instruction & 0x07) + 4; ++reg)
+			for (reg = 4; reg <= ((uint32_t)instruction & 0x07) + 4; ++reg)
 				ucb->vrs[reg] = *vsp++;
 
 			if (instruction & 0x08)
